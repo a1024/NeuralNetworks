@@ -1,0 +1,1 @@
+This repository contains the deliverables for the CSE616 Neural Networks course.
