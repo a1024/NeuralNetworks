@@ -27,7 +27,7 @@ We make use of convolution groups. As the data progresses from image space to la
 At training time, the encoder tries to fit the mean and variance of the latent space. Then we sample random values from these normal distributions and pass them to the decoder. While at test time we use the mean value produced by the encoder as the latent code to compress. Before compressing the code it is quantized. To reflect this in the training process we add uniform quantization noise to the feature just before the mean and variance are calculated.
 
 \section{Autoencoder versions}
-We made two versions of the autoencoder. The first version had 136827 parameters (87612 in encoder and 49215 in decoder) and took over 60 training epochs to get acceptable results. While the second version has just 24075 parameters (15044 in encoder and 9031 in decoder) and took around 20 epochs to get acceptable results.
+We made two versions of the autoencoder. The first version had 136827 parameters (87612 in encoder and 49215 in decoder) and took around 110 training epochs to get acceptable results. While the second version has just 24075 parameters (15044 in encoder and 9031 in decoder) and took around 25 epochs to get acceptable results.
 
 \begin{table}
 \begin{tabular}{|l|l|l|l|l|l|}
@@ -75,7 +75,7 @@ Input & Filter & Stride & Pad & Output & Params\\
 
 \begin{center}
 \begin{figure}
-\caption{Version 1 test results. Left: original images. Right: decoded images.}
+\caption{Version 1 test results after 110 training epochs. Left: original images. Right: decoded images.}
 \includegraphics[width=0.9\textwidth]{20220530 1 v1.PNG}
 \DeclareGraphicsExtensions{.png}
 \end{figure}
@@ -83,7 +83,7 @@ Input & Filter & Stride & Pad & Output & Params\\
 
 \begin{center}
 \begin{figure}
-\caption{Version 2 test results. Left: original images. Right: decoded images.}
+\caption{Version 2 test results after 25 training epochs. Left: original images. Right: decoded images.}
 \includegraphics[width=0.9\textwidth]{20220530 2 v2.PNG}
 \DeclareGraphicsExtensions{.png}
 \end{figure}
