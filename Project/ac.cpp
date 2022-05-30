@@ -110,6 +110,7 @@ inline int		load_int_be(const unsigned char *buffer)
 	p[3]=buffer[0];
 	return i;
 }
+
 	#define		LOG_WINDOW_SIZE		16	//[2, 16]	do not change
 	#define		LOG_CONFBOOST		14
 	#define		ABAC2_CONF_MSB_RELATION
@@ -169,7 +170,8 @@ int				abac4_encode(const void *src, int imsize, int depth, int bytestride, unsi
 
 		if(hitcount<imsize*min_conf)//incompressible, bypass
 		{
-			emit_pad(out_data, out_size, out_cap, (imsize+7)>>3);
+			int planesize=(imsize+7)>>3;
+			emit_pad(out_data, out_size, out_cap, planesize);
 			auto plane=out_data+out_size;
 			//plane.resize((imsize+7)>>3, 0);
 			for(int kb=0, kb2=0, b=0;kb<imsize;++kb, kb2+=bytestride)
@@ -179,6 +181,7 @@ int				abac4_encode(const void *src, int imsize, int depth, int bytestride, unsi
 			//	int bit=buffer[kb]>>kp&1;
 				plane[byte_idx]|=bit<<bit_idx;
 			}
+			out_size+=planesize;
 			PROF(ENC_BYPASS_PLANE);
 		}
 		else
@@ -232,7 +235,7 @@ int				abac4_encode(const void *src, int imsize, int depth, int bytestride, unsi
 				int p0=prob-0x8000;
 				p0=p0*prob_correct>>16;
 				p0=p0*prob_correct>>16;
-				int sure=-(prevbit==prevbit0);
+				int sure=-(prevbit==prevbit0)&-(kp!=depth-1);
 				p0=p0*(hitratio_notsure+(hitratio_delta&sure))>>16;
 				//p0=p0*(prevbit==prevbit0?hitratio_sure:hitratio_notsure)>>16;
 				//p0=(long long)p0*hitcount>>16;
@@ -324,6 +327,7 @@ int				abac4_encode(const void *src, int imsize, int depth, int bytestride, unsi
 		}
 		//	printf("bit %d: conf = %6d / %6d = %lf%%\n", kp, hitcount, imsize, 100.*hitcount/imsize);
 		offset=out_idx_sizes+kp*sizeof(int);
+		//printf("Plane %d: %d bytes\n", kp, (int)(out_size-out_planestart));
 		store_int_le(out_data, offset, (int)(out_size-out_planestart));
 		//out_data[out_idx_sizes+kp]=out_size-out_planestart;
 		//out_data[out_idx_sizes+depth-1-kp]=out_size-out_planestart;
@@ -438,7 +442,7 @@ int				abac4_decode(const unsigned char *in_data, unsigned long long &in_idx, un
 			int p0=prob-0x8000;
 			p0=p0*prob_correct>>16;
 			p0=p0*prob_correct>>16;
-			int sure=-(prevbit==prevbit0);
+			int sure=-(prevbit==prevbit0)&-(kp!=depth-1);
 			p0=p0*(hitratio_notsure+(hitratio_delta&sure))>>16;
 			//p0=p0*(prevbit==prevbit0?hitratio_sure:hitratio_notsure)>>16;
 			//p0=(long long)p0*hitcount>>16;
