@@ -10,9 +10,15 @@ import torchvision
 from PIL import Image
 import numpy
 
+
 from ctypes import cdll
-#libac=cdll.LoadLibrary('./libac.so')#arithmetic coder
-libac=cdll.LoadLibrary('./libac.dll')
+from sys import platform
+
+if platform == "linux" or platform == "linux2":
+	libac=cdll.LoadLibrary('./libac.so')#arithmetic coder
+elif platform == "win32":
+	libac=cdll.LoadLibrary('./libac.dll')
+
 class Buffer(ctypes.Structure):
 	_fields_=[
 		('size', ctypes.c_longlong),
@@ -92,8 +98,8 @@ class CompressorModel(nn.Module):
 		#self.analysis_conv3=nn.Conv2d(in_channels=48, out_channels=192, kernel_size=4, stride=2, padding=1, groups=16)
 		#self.analysis_conv4=nn.Conv2d(in_channels=192, out_channels=768, kernel_size=4, stride=2, padding=1, groups=64)
 		#
-		#self.analysis_conv5_mean=nn.Conv2d(in_channels=768, out_channels=768, kernel_size=3, stride=1, padding=1, groups=256)
-		#self.analysis_conv5_std=nn.Conv2d(in_channels=768, out_channels=768, kernel_size=3, stride=1, padding=1, groups=256)
+		#self.analysis_conv_mean=nn.Conv2d(in_channels=768, out_channels=768, kernel_size=3, stride=1, padding=1, groups=256)
+		#self.analysis_conv_std=nn.Conv2d(in_channels=768, out_channels=768, kernel_size=3, stride=1, padding=1, groups=256)
 		#
 		#self.synth_conv1=nn.ConvTranspose2d(in_channels=768, out_channels=192, kernel_size=4, stride=2, padding=1, groups=64)
 		#self.synth_conv2=nn.ConvTranspose2d(in_channels=192, out_channels=48, kernel_size=4, stride=2, padding=1, groups=16)
@@ -236,14 +242,14 @@ test_loss=0
 for x, y in test_loader:
 	xhat, code=model.test(x)
 
-	#print(compr)
 	code=code.detach()
 	code=code.numpy()
 	usize=code.size
 	code=code.astype(numpy.int32)
+	#print(code)#
 	code=code.ctypes.data_as(c_int_p)
 	csize=libac.test(code, usize, 1)
-	print('Compression %d->%d = %f'%(usize, csize, usize/csize))
+	print('Compression %d->%d bytes = %f'%(usize, csize, usize/csize))
 
 	save_tensor_as_grid(x, output_size, 'compression_original.png')
 	save_tensor_as_grid(xhat, output_size, 'compression_retrieved.png')
